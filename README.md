@@ -26,6 +26,13 @@ pip install -r requirements.txt
 Переместите файл `lib_book.db` в `FBook-bot/`
 
 4:
+создайте файл `config.py` и впешите в нём:
+```python
+TOKEN = "Ваш токен бота телеграмма"
+```
+и вставьте в переменную ваш токен
+
+5:
 ```sh
 python3 bot.py
 ```

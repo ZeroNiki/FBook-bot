@@ -1,6 +1,7 @@
 __pycache__
 venv
-config.py
 lib_book.db
+config.py
 command.txt
+test.py
 
