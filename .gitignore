@@ -1,4 +1,6 @@
 __pycache__
 venv
 config.py
+lib_book.db
+command.txt
 

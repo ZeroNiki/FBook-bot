@@ -1,9 +1,11 @@
 from aiogram import Bot, Dispatcher, types, executor
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.types import ParseMode
+from aiogram.types import ParseMode, InputFile
 from aiogram.dispatcher.filters import Text
 from config import TOKEN
 
+import os
+import shutil
 import sqlite3
 import requests
 
@@ -50,15 +52,58 @@ async def inline_keyboard_fb2(call: types.CallbackQuery):
     if response.status_code == 200:
         with open(f'book/{name}.zip', 'wb') as file:
             file.write(response.content)
+            file_zip = InputFile(f"book/{name}.zip")
             print("Файл успешно скачан")
+
+            await call.message.answer_document(document=file_zip)
     else:
         print("Ошибка при скачивании файла")
+
+    # Удаление файлов
+    for filename in os.listdir('book/'):
+        file_path = os.path.join('book/', filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+
+        except Exception as e:
+            print('Ошибка %s. Причина: %s' % (file_path, e))
 
 
 # Inline button 'download' (fb2) (Specific)
 @dp.callback_query_handler(text="fb2_specific")
 async def inline_keyboard_fb2(call: types.CallbackQuery):
-    await call.message.answer("Кнопка пока что не работает скачиваете через ссылку")
+    id = id_b
+    name = name_b
+
+    # Устоновка
+    url = f'https://flibusta.is/b/{id}/fb2'
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        with open(f'book/{name}.zip', 'wb') as file:
+            file.write(response.content)
+            file_zip = InputFile(f"book/{name}.zip")
+            print("Файл успешно скачан")
+
+            await call.message.answer_document(document=file_zip)
+    else:
+        print("Ошибка при скачивании файла")
+
+    # Удаление файлов
+    for filename in os.listdir('book/'):
+        file_path = os.path.join('book/', filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+
+        except Exception as e:
+            print('Ошибка %s. Причина: %s' % (file_path, e))
 
 
 # Random function
@@ -101,19 +146,25 @@ async def search(message: types.Message):
 
 @ dp.message_handler(content_types="text")
 async def search_book(message: types.Message):
+    global name_b
+    global id_b
+
     # inline keyboard
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton(
-        text='Пока не работает', callback_data='fb2_specific'))
+        text='FB2', callback_data='fb2_specific'))
 
-    book_name_search = message.text
+    book_name_search = message.text.capitalize()
 
     cur.execute("SELECT id, name_book, author, genre_book, download_link, discription, img FROM books WHERE name_book LIKE ?",
                 ('%' + book_name_search + '%',))
 
-    items = cur.fetchall()
+    items = cur.fetchmany(1)
 
     for item in items:
+        id_b = item[0]
+        name_b = item[1]
+
         msg_text = (
             f"*{item[1]}*\n\n"
             f"_{item[2]}_\n\n"
