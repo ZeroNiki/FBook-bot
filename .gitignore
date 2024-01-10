@@ -1,0 +1,7 @@
+__pycache__
+venv
+lib_book.db
+config.py
+command.txt
+test.py
+
